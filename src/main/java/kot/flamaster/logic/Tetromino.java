@@ -53,4 +53,16 @@ public enum Tetromino {
     public Color getColor() {
         return color;
     }
+
+    public int[][] rotate() {
+        int[][] rotatedShape = new int[shape.length][shape.length];
+
+        for (int x = 0; x < shape.length; x++) {
+            for (int y = 0; y < shape.length; y++) {
+                rotatedShape[y][shape.length - x - 1] = shape[x][y];
+            }
+        }
+
+        return rotatedShape;
+    }
 }
