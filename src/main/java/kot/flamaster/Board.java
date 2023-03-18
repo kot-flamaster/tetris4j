@@ -1,5 +1,7 @@
 package kot.flamaster;
 
+import kot.flamaster.logic.Tetromino;
+
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -31,6 +33,25 @@ public class Board extends JPanel {
             }
         }
     }
+    private boolean isValidMove(Tetromino tetromino, int posX, int posY) {
+        int[][] shape = tetromino.getShape();
+
+        for (int x = 0; x < shape.length; x++) {
+            for (int y = 0; y < shape[x].length; y++) {
+                if (shape[x][y] != 0) {
+                    int boardX = posX + x;
+                    int boardY = posY + y;
+
+                    if (boardX < 0 || boardX >= WIDTH || boardY < 0 || boardY >= HEIGHT || board[boardX][boardY] != null) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
 }
 
 
