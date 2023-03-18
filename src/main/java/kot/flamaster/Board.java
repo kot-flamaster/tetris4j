@@ -2,12 +2,15 @@ package kot.flamaster;
 
 import kot.flamaster.logic.Tetromino;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.Random;
 
 public class Board extends JPanel {
 
@@ -17,12 +20,19 @@ public class Board extends JPanel {
 
     private Color[][] board;
 
+    private Timer timer;
+    private Tetromino currentTetromino;
+    private int currentX;
+    private int currentY;
+
     public Board() {
         board = new Color[WIDTH][HEIGHT];
         setPreferredSize(new Dimension(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE));
 
         initKeyListener();
         setFocusable(true);
+        spawnNewTetromino();
+        initTimer();
     }
 
     public void initKeyListener(){
@@ -32,6 +42,16 @@ public class Board extends JPanel {
                 handleKeyPress(e);
             }
         });
+    }
+
+    public void initTimer(){
+        timer = new Timer(500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateGame();
+            }
+        });
+        timer.start();
     }
 
     @Override
@@ -47,7 +67,7 @@ public class Board extends JPanel {
             }
         }
     }
-    private boolean isValidMove(Tetromino tetromino, int posX, int posY) {
+    private boolean isValidMove(Tetromino tetromino, int[][] rotatedShape, int posX, int posY) {
         int[][] shape = tetromino.getShape();
 
         for (int x = 0; x < shape.length; x++) {
@@ -69,7 +89,10 @@ public class Board extends JPanel {
     private void handleKeyPress(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP:
-                // Rotate tetromino
+                int[][] rotatedShape = currentTetromino.rotate();
+                if (isValidMove(currentTetromino, rotatedShape, currentX, currentY)) {
+                    currentTetromino = Tetromino.getTetrominoWithShape(rotatedShape);
+                }
                 break;
             case KeyEvent.VK_DOWN:
                 // Move tetromino down
@@ -87,6 +110,39 @@ public class Board extends JPanel {
                 // Pause game
                 break;
         }
+    }
+
+    private void updateGame() {
+        // Move the current tetromino down
+        currentY++;
+        if (!isValidMove(currentTetromino, null, currentX, currentY)) {
+            currentY--;
+            placeTetromino(currentTetromino, currentX, currentY);
+            clearLines();
+            spawnNewTetromino();
+        }
+        repaint();
+    }
+
+    private void placeTetromino(Tetromino tetromino, int posX, int posY) {
+        int[][] shape = tetromino.getShape();
+        for (int x = 0; x < shape.length; x++) {
+            for (int y = 0; y < shape[x].length; y++) {
+                if (shape[x][y] != 0) {
+                    board[posX + x][posY + y] = tetromino.getColor();
+                }
+            }
+        }
+    }
+
+    private void clearLines() {
+        // Implement line-clearing logic
+    }
+
+    private void spawnNewTetromino() {
+        currentTetromino = Tetromino.values()[new Random().nextInt(Tetromino.values().length)];
+        currentX = WIDTH / 2 - currentTetromino.getShape().length / 2;
+        currentY = 0;
     }
 }
 

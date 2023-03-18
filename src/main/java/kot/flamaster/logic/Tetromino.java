@@ -1,6 +1,7 @@
 package kot.flamaster.logic;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public enum Tetromino {
     I(new int[][] {
@@ -64,5 +65,14 @@ public enum Tetromino {
         }
 
         return rotatedShape;
+    }
+
+    public static Tetromino getTetrominoWithShape(int[][] shape) {
+        for (Tetromino tetromino : Tetromino.values()) {
+            if (Arrays.deepEquals(shape, tetromino.getShape())) {
+                return tetromino;
+            }
+        }
+        return null;
     }
 }
