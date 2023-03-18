@@ -26,6 +26,7 @@ public class Board extends JPanel {
 
     private boolean gameOver;
     private int score;
+    private boolean isPaused = false;
 
     public Board() {
         board = new Color[WIDTH][HEIGHT];
@@ -85,6 +86,9 @@ public class Board extends JPanel {
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Score: " + score, 10, 20);
         // Add more info if needed, e.g. level, lines cleared, etc.
+        if (isPaused) {
+            g.drawString("Paused", 10, 50);
+        }
     }
 
 
@@ -140,7 +144,10 @@ public class Board extends JPanel {
                 // Drop tetromino
                 break;
             case KeyEvent.VK_P:
-                // Pause game
+                pauseGame();
+                break;
+            case KeyEvent.VK_N:
+                startNewGame();
                 break;
         }
     }
@@ -175,6 +182,7 @@ public class Board extends JPanel {
                         board[boardX][boardY] = currentFigure.getColor();
                     } else {
                         gameOver = true;
+                        timer.stop();
                         return;
                     }
                 }
@@ -227,6 +235,29 @@ public class Board extends JPanel {
         if (isValidMove(currentFigure, currentX + dx, currentY)) {
             currentX += dx;
         }
+    }
+
+    private void pauseGame() {
+        isPaused = !isPaused;
+        if (isPaused) {
+            timer.stop();
+        } else {
+            timer.start();
+        }
+        repaint();
+    }
+
+    private void startNewGame() {
+        isPaused = false;
+        gameOver = false;
+        score = 0;
+        clearBoard();
+        spawnNewTetromino();
+        timer.start();
+    }
+
+    private void clearBoard() {
+        board = new Color[WIDTH][HEIGHT];
     }
 }
 
