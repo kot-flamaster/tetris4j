@@ -6,6 +6,8 @@ import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class Board extends JPanel {
 
@@ -18,6 +20,18 @@ public class Board extends JPanel {
     public Board() {
         board = new Color[WIDTH][HEIGHT];
         setPreferredSize(new Dimension(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE));
+
+        initKeyListener();
+        setFocusable(true);
+    }
+
+    public void initKeyListener(){
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                handleKeyPress(e);
+            }
+        });
     }
 
     @Override
@@ -52,6 +66,28 @@ public class Board extends JPanel {
         return true;
     }
 
+    private void handleKeyPress(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_UP:
+                // Rotate tetromino
+                break;
+            case KeyEvent.VK_DOWN:
+                // Move tetromino down
+                break;
+            case KeyEvent.VK_LEFT:
+                // Move tetromino left
+                break;
+            case KeyEvent.VK_RIGHT:
+                // Move tetromino right
+                break;
+            case KeyEvent.VK_SPACE:
+                // Drop tetromino
+                break;
+            case KeyEvent.VK_P:
+                // Pause game
+                break;
+        }
+    }
 }
 
 
