@@ -82,7 +82,7 @@ public class Board extends JPanel {
     }
 
     private void drawInfo(Graphics g) {
-        g.setColor(Color.BLACK);
+        g.setColor(Color.RED);
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString("Score: " + score, 10, 20);
         // Add more info if needed, e.g. level, lines cleared, etc.
