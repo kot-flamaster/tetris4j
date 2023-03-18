@@ -3,76 +3,137 @@ package kot.flamaster.logic;
 import java.awt.*;
 import java.util.Arrays;
 
-public enum Tetromino {
-    I(new int[][] {
-            {1, 1, 1, 1}
-    },
-            Color.CYAN),
-    O(new int[][] {
-            {1, 1},
-            {1, 1}
-    },
-            Color.YELLOW),
-    T(new int[][] {
-            {1, 1, 1},
-            {0, 1, 0}
-    },
-            Color.MAGENTA),
-    S(new int[][] {
-            {0, 1, 1},
-            {1, 1, 0}
-    },
-            Color.GREEN),
-    Z(new int[][] {
-            {1, 1, 0},
-            {0, 1, 1}
-    },
-            Color.RED),
-    J(new int[][] {
-            {1, 0, 0},
-            {1, 1, 1}
-    },
-            Color.BLUE),
-    L(new int[][] {
-            {0, 0, 1},
-            {1, 1, 1}
-    },
-            Color.ORANGE);
+import java.awt.Color;
 
-    private final int[][] shape;
+public enum Tetromino implements IGameFigure {
+    I(new Color(0, 255, 255), new int[][][]{
+            {
+                    {1},
+                    {1},
+                    {1},
+                    {1}
+            },
+            {
+                    {1, 1, 1, 1}
+            }
+    }),
+    O(new Color(255, 255, 0), new int[][][]{
+            {
+                    {1, 1},
+                    {1, 1}
+            }
+    }),
+    T(new Color(128, 0, 128), new int[][][]{
+            {
+                    {1, 1, 1},
+                    {0, 1, 0}
+            },
+            {
+                    {0, 1},
+                    {1, 1},
+                    {0, 1}
+            },
+            {
+                    {0, 1, 0},
+                    {1, 1, 1}
+            },
+            {
+                    {1, 0},
+                    {1, 1},
+                    {1, 0}
+            }
+    }),
+    S(new Color(0, 255, 0), new int[][][]{
+            {
+                    {0, 1, 1},
+                    {1, 1, 0}
+            },
+            {
+                    {1, 0},
+                    {1, 1},
+                    {0, 1}
+            }
+    }),
+    Z(new Color(255, 0, 0), new int[][][]{
+            {
+                    {1, 1, 0},
+                    {0, 1, 1}
+            },
+            {
+                    {0, 1},
+                    {1, 1},
+                    {1, 0}
+            }
+    }),
+    J(new Color(0, 0, 255), new int[][][]{
+            {
+                    {1, 0, 0},
+                    {1, 1, 1}
+            },
+            {
+                    {1, 1},
+                    {1, 0},
+                    {1, 0}
+            },
+            {
+                    {1, 1, 1},
+                    {0, 0, 1}
+            },
+            {
+                    {0, 1},
+                    {0, 1},
+                    {1, 1}
+            }
+    }),
+    L(new Color(255, 165, 0), new int[][][]{
+            {
+                    {0, 0, 1},
+                    {1, 1, 1}
+            },
+            {
+                    {1, 0},
+                    {1, 0},
+                    {1, 1}
+            },
+            {
+                    {1, 1, 1},
+                    {1, 0, 0}
+            },
+            {
+                    {1, 1},
+                    {0, 1},
+                    {0, 1}
+            }
+    });
+
     private final Color color;
+    private final int[][][] shapes;
 
-    Tetromino(int[][] shape, Color color) {
-        this.shape = shape;
+    Tetromino(Color color, int[][][] shapes) {
         this.color = color;
+        this.shapes = shapes;
     }
 
-    public int[][] getShape() {
-        return shape;
-    }
-
+    @Override
     public Color getColor() {
         return color;
     }
 
-    public int[][] rotate() {
-        int[][] rotatedShape = new int[shape.length][shape.length];
-
-        for (int x = 0; x < shape.length; x++) {
-            for (int y = 0; y < shape.length; y++) {
-                rotatedShape[y][shape.length - x - 1] = shape[x][y];
-            }
-        }
-
-        return rotatedShape;
+    @Override
+    public int[][] getShape() {
+        return getShape(0);
     }
 
-    public static Tetromino getTetrominoWithShape(int[][] shape) {
-        for (Tetromino tetromino : Tetromino.values()) {
-            if (Arrays.deepEquals(shape, tetromino.getShape())) {
-                return tetromino;
-            }
-        }
-        return null;
+    public int[][] getShape(int rotation) {
+        return shapes[rotation];
+    }
+
+    public int[][][] getShapes() {
+        return shapes;
+    }
+
+    public static Tetromino randomTetromino() {
+        Tetromino[] values = values();
+        return values[(int) (Math.random() * values.length)];
     }
 }

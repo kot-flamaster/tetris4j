@@ -1,5 +1,6 @@
 package kot.flamaster;
 
+import kot.flamaster.logic.FigureInstance;
 import kot.flamaster.logic.Tetromino;
 
 import javax.swing.*;
@@ -20,7 +21,7 @@ public class Board extends JPanel {
     private Color[][] board;
 
     private Timer timer;
-    private Tetromino currentTetromino;
+    private FigureInstance currentFigure;
     private int currentX;
     private int currentY;
 
@@ -30,15 +31,16 @@ public class Board extends JPanel {
         board = new Color[WIDTH][HEIGHT];
         setPreferredSize(new Dimension(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE));
 
+        spawnNewTetromino();
+
         initKeyListener();
         setFocusable(true);
-        spawnNewTetromino();
         initTimer();
 
         score = 0;
     }
 
-    public void initKeyListener(){
+    public void initKeyListener() {
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -47,7 +49,7 @@ public class Board extends JPanel {
         });
     }
 
-    public void initTimer(){
+    public void initTimer() {
         timer = new Timer(500, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,7 +69,7 @@ public class Board extends JPanel {
 
     }
 
-    public void drawBoard(Graphics g){
+    public void drawBoard(Graphics g) {
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
                 g.setColor(board[x][y] != null ? board[x][y] : Color.BLACK);
@@ -87,11 +89,11 @@ public class Board extends JPanel {
 
 
     private void drawTetromino(Graphics g) {
-        int[][] shape = currentTetromino.getShape();
+        int[][] shape = currentFigure.getShape();
         for (int x = 0; x < shape.length; x++) {
             for (int y = 0; y < shape[x].length; y++) {
                 if (shape[x][y] != 0) {
-                    g.setColor(currentTetromino.getColor());
+                    g.setColor(currentFigure.getColor());
                     g.fillRect((currentX + x) * TILE_SIZE, (currentY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     g.setColor(Color.BLACK);
                     g.drawRect((currentX + x) * TILE_SIZE, (currentY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
@@ -100,32 +102,27 @@ public class Board extends JPanel {
         }
     }
 
-    private boolean isValidMove(Tetromino tetromino, int[][] rotatedShape, int posX, int posY) {
-        int[][] shape = tetromino.getShape();
-
+    private boolean isValidMove(FigureInstance figure, int posX, int posY) {
+        int[][] shape = figure.getShape();
         for (int x = 0; x < shape.length; x++) {
             for (int y = 0; y < shape[x].length; y++) {
                 if (shape[x][y] != 0) {
                     int boardX = posX + x;
                     int boardY = posY + y;
 
-                    if (boardX < 0 || boardX >= WIDTH || boardY < 0 || boardY >= HEIGHT || board[boardX][boardY] != null) {
+                    if (boardX < 0 || boardX >= WIDTH || boardY >= HEIGHT || (boardY >= 0 && board[boardX][boardY] != null)) {
                         return false;
                     }
                 }
             }
         }
-
         return true;
     }
 
     private void handleKeyPress(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP:
-                int[][] rotatedShape = currentTetromino.rotate();
-                if (isValidMove(currentTetromino, rotatedShape, currentX, currentY)) {
-                    currentTetromino = Tetromino.getTetrominoWithShape(rotatedShape);
-                }
+               rotate();
                 break;
             case KeyEvent.VK_DOWN:
                 // Move tetromino down
@@ -144,38 +141,68 @@ public class Board extends JPanel {
                 break;
         }
     }
-
+    private void drop() {
+        if (isValidMove(currentFigure, currentX, currentY + 1)) {
+            currentY++;
+        } else {
+            placeTetromino();
+        }
+    }
     private void updateGame() {
         // Move the current tetromino down
-        currentY++;
-        if (!isValidMove(currentTetromino, null, currentX, currentY)) {
-            currentY--;
-            placeTetromino(currentTetromino, currentX, currentY);
-            clearLines();
+        if (currentFigure == null) {
             spawnNewTetromino();
         }
+
+        drop();
         repaint();
     }
 
-    private void placeTetromino(Tetromino tetromino, int posX, int posY) {
-        int[][] shape = tetromino.getShape();
+    private void placeTetromino() {
+        int[][] shape = currentFigure.getShape();
+
         for (int x = 0; x < shape.length; x++) {
             for (int y = 0; y < shape[x].length; y++) {
                 if (shape[x][y] != 0) {
-                    board[posX + x][posY + y] = tetromino.getColor();
+                    int boardX = currentX + x;
+                    int boardY = currentY + y;
+                    if (boardY >= 0) {
+                        board[boardX][boardY] = currentFigure.getColor();
+                    } else {
+//                        isGameOver = true;
+                        return;
+                    }
                 }
             }
         }
+
+        removeCompletedLines();
+        spawnNewTetromino();
     }
 
-    private void clearLines() {
+    private void removeCompletedLines() {
         // Implement line-clearing logic
     }
 
     private void spawnNewTetromino() {
-        currentTetromino = Tetromino.values()[new Random().nextInt(Tetromino.values().length)];
-        currentX = WIDTH / 2 - currentTetromino.getShape().length / 2;
-        currentY = 0;
+        currentFigure = new FigureInstance(Tetromino.randomTetromino());
+        currentX = WIDTH / 2 - 1;
+        currentY = -currentFigure.getShape().length + 1;
+    }
+
+    private void rotate() {
+        FigureInstance rotatedFigure = new FigureInstance(currentFigure.getTetromino());
+        rotatedFigure.setRotation((currentFigure.getRotation() + 1) % currentFigure.getTetromino().getShapes().length);
+
+        if (isValidMove(rotatedFigure, currentX, currentY)) {
+            currentFigure.rotate();
+        }
+    }
+
+    private void move(int dx) {
+        if (isValidMove(currentFigure, currentX + dx, currentY)) {
+            currentX += dx;
+        }
     }
 }
 
