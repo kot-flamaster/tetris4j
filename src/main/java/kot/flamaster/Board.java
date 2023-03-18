@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.Random;
 
 public class Board extends JPanel {
 
@@ -25,6 +24,7 @@ public class Board extends JPanel {
     private int currentX;
     private int currentY;
 
+    private boolean gameOver;
     private int score;
 
     public Board() {
@@ -152,13 +152,15 @@ public class Board extends JPanel {
         }
     }
     private void updateGame() {
-        // Move the current tetromino down
-        if (currentFigure == null) {
-            spawnNewTetromino();
-        }
+        if (!gameOver) {
+            // Move the current tetromino down
+            if (currentFigure == null) {
+                spawnNewTetromino();
+            }
 
-        drop();
-        repaint();
+            drop();
+            repaint();
+        }
     }
 
     private void placeTetromino() {
@@ -172,7 +174,7 @@ public class Board extends JPanel {
                     if (boardY >= 0) {
                         board[boardX][boardY] = currentFigure.getColor();
                     } else {
-//                        isGameOver = true;
+                        gameOver = true;
                         return;
                     }
                 }
