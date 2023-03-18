@@ -122,16 +122,19 @@ public class Board extends JPanel {
     private void handleKeyPress(KeyEvent e) {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_UP:
-               rotate();
+                rotate();
                 break;
             case KeyEvent.VK_DOWN:
                 // Move tetromino down
+                drop();
                 break;
             case KeyEvent.VK_LEFT:
                 // Move tetromino left
+                move(-1);
                 break;
             case KeyEvent.VK_RIGHT:
                 // Move tetromino right
+                move(1);
                 break;
             case KeyEvent.VK_SPACE:
                 // Drop tetromino
@@ -182,6 +185,25 @@ public class Board extends JPanel {
 
     private void removeCompletedLines() {
         // Implement line-clearing logic
+        for (int y = 0; y < HEIGHT; y++) {
+            boolean fullLine = true;
+            for (int x = 0; x < WIDTH; x++) {
+                if (board[x][y] == null) {
+                    fullLine = false;
+                    break;
+                }
+            }
+            if (fullLine) {
+                // Remove line and shift down all lines above
+                for (int k = y; k > 0; k--) {
+                    for (int x = 0; x < WIDTH; x++) {
+                        board[x][k] = board[x][k - 1];
+                    }
+                }
+                // Update score
+                score += 100;
+            }
+        }
     }
 
     private void spawnNewTetromino() {
