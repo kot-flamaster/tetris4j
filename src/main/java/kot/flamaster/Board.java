@@ -34,16 +34,25 @@ public class Board extends JPanel {
     private int score;
     private boolean isPaused = false;
 
-    public void initAnimationController(){
-        animationController = new AnimatedController(this::repaint);
+    private boolean animationEnabled;
+    private boolean isEnabledAnimation(){
+        return animationEnabled;
+    }
+    private void changeAnimationMode(){
+        this.animationEnabled = !animationEnabled;
     }
 
-    public void toggleAnimation() {
-        if (animationController instanceof AnimatedController) {
+    public void initAnimationController(){
+        if (!isEnabledAnimation()) {
             animationController = new NoAnimationController();
         } else {
             animationController = new AnimatedController(this::repaint);
         }
+    }
+
+    public void toggleAnimation() {
+        changeAnimationMode();
+        initAnimationController();
     }
 
     public Board() {
