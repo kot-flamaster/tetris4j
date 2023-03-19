@@ -1,5 +1,8 @@
 package kot.flamaster;
 
+import kot.flamaster.animation.AnimatedController;
+import kot.flamaster.animation.AnimationController;
+import kot.flamaster.animation.NoAnimationController;
 import kot.flamaster.logic.FigureInstance;
 import kot.flamaster.logic.Tetromino;
 
@@ -11,6 +14,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class Board extends JPanel {
+
+    private static final int TIMER_INTERVAL = 500;
+    private AnimationController animationController;
 
     private static final int WIDTH = 10;
     private static final int HEIGHT = 20;
@@ -28,7 +34,21 @@ public class Board extends JPanel {
     private int score;
     private boolean isPaused = false;
 
+    public void initAnimationController(){
+        animationController = new AnimatedController(this::repaint);
+    }
+
+    public void toggleAnimation() {
+        if (animationController instanceof AnimatedController) {
+            animationController = new NoAnimationController();
+        } else {
+            animationController = new AnimatedController(this::repaint);
+        }
+    }
+
     public Board() {
+        initAnimationController();
+
         board = new Color[WIDTH][HEIGHT];
         setPreferredSize(new Dimension(WIDTH * CELL_SIZE, HEIGHT * CELL_SIZE));
 
@@ -51,7 +71,7 @@ public class Board extends JPanel {
     }
 
     public void initTimer() {
-        timer = new Timer(500, new ActionListener() {
+        timer = new Timer(TIMER_INTERVAL, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 updateGame();
@@ -73,10 +93,8 @@ public class Board extends JPanel {
     public void drawBoard(Graphics g) {
         for (int x = 0; x < WIDTH; x++) {
             for (int y = 0; y < HEIGHT; y++) {
-                g.setColor(board[x][y] != null ? board[x][y] : Color.BLACK);
-                g.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                g.setColor(Color.GRAY);
-                g.drawRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                Color color = board[x][y] != null ? board[x][y] : Color.BLACK;
+                drawTile(g, x * TILE_SIZE, y * TILE_SIZE, color);
             }
         }
     }
@@ -89,6 +107,9 @@ public class Board extends JPanel {
         if (isPaused) {
             g.drawString("Paused", 10, 50);
         }
+        if(animationController.isAnimating()){
+            g.drawString("Animation ON", 10, 80);
+        }
     }
 
 
@@ -97,10 +118,14 @@ public class Board extends JPanel {
         for (int x = 0; x < shape.length; x++) {
             for (int y = 0; y < shape[x].length; y++) {
                 if (shape[x][y] != 0) {
-                    g.setColor(currentFigure.getColor());
-                    g.fillRect((currentX + x) * TILE_SIZE, (currentY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                    g.setColor(Color.BLACK);
-                    g.drawRect((currentX + x) * TILE_SIZE, (currentY + y) * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    int px = (currentX + x) * TILE_SIZE;
+                    int py = (currentY + y) * TILE_SIZE;
+
+                    if (animationController.isAnimating()) {
+                        py += (TILE_SIZE * animationController.getAnimationFrame()) / 10;
+                    }
+
+                    drawTile(g, px, py, currentFigure.getColor());
                 }
             }
         }
@@ -149,10 +174,16 @@ public class Board extends JPanel {
             case KeyEvent.VK_N:
                 startNewGame();
                 break;
+            case KeyEvent.VK_T:
+                toggleAnimation();
+                break;
         }
     }
     private void drop() {
         if (isValidMove(currentFigure, currentX, currentY + 1)) {
+//            timer.stop();
+            animationController.startAnimation();
+//            timer.start();
             currentY++;
         } else {
             placeTetromino();
@@ -258,6 +289,22 @@ public class Board extends JPanel {
 
     private void clearBoard() {
         board = new Color[WIDTH][HEIGHT];
+    }
+
+
+    private void drawTile(Graphics g, int x, int y, Color color) {
+        if (color != null) {
+            g.setColor(color);
+            g.fillRect(x + 1, y + 1, TILE_SIZE - 2, TILE_SIZE - 2);
+
+            g.setColor(color.brighter());
+            g.drawLine(x, y + TILE_SIZE - 1, x, y);
+            g.drawLine(x, y, x + TILE_SIZE - 1, y);
+
+            g.setColor(color.darker());
+            g.drawLine(x + 1, y + TILE_SIZE - 1, x + TILE_SIZE - 1, y + TILE_SIZE - 1);
+            g.drawLine(x + TILE_SIZE - 1, y + TILE_SIZE - 1, x + TILE_SIZE - 1, y + 1);
+        }
     }
 }
 
