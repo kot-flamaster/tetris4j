@@ -95,6 +95,12 @@ public class Board extends JPanel {
 
         drawBoard(g);
         drawTetromino(g);
+
+        // Draw the projection of the falling figure
+        int dropPosition = calculateDropPosition();
+        drawTetromino(g,  dropPosition, false, new Color(128, 128, 128, 128));
+
+
         drawInfo(g);
 
     }
@@ -121,24 +127,38 @@ public class Board extends JPanel {
         }
     }
 
+    private void drawTetromino(Graphics g){
+        drawTetromino(g, currentY, true, currentFigure.getColor());
+    }
 
-    private void drawTetromino(Graphics g) {
+    private void drawTetromino(Graphics g, int posY, boolean animated, Color color) {
         int[][] shape = currentFigure.getShape();
         for (int x = 0; x < shape.length; x++) {
             for (int y = 0; y < shape[x].length; y++) {
                 if (shape[x][y] != 0) {
                     int px = (currentX + x) * TILE_SIZE;
-                    int py = (currentY + y) * TILE_SIZE;
+                    int py = (posY + y) * TILE_SIZE;
 
-                    if (animationController.isAnimating() && isValidMove(currentFigure, currentX, currentY + 1)) {
+                    if (animated && animationController.isAnimating() && isValidMove(currentFigure, currentX, currentY + 1)) {
                         py += (TILE_SIZE * animationController.getAnimationFrame()) / 10;
                     }
 
-                    drawTile(g, px, py, currentFigure.getColor());
+                    drawTile(g, px, py, color);
                 }
             }
         }
     }
+
+    private int calculateDropPosition() {
+        int dropPosition = currentY;
+
+        while (isValidMove(currentFigure, currentX, dropPosition + 1)) {
+            dropPosition++;
+        }
+
+        return dropPosition;
+    }
+
 
     private boolean isValidMove(FigureInstance figure, int posX, int posY) {
         int[][] shape = figure.getShape();
