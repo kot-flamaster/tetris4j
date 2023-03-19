@@ -130,7 +130,7 @@ public class Board extends JPanel {
                     int px = (currentX + x) * TILE_SIZE;
                     int py = (currentY + y) * TILE_SIZE;
 
-                    if (animationController.isAnimating()) {
+                    if (animationController.isAnimating() && isValidMove(currentFigure, currentX, currentY + 1)) {
                         py += (TILE_SIZE * animationController.getAnimationFrame()) / 10;
                     }
 
